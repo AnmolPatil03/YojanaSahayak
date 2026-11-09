@@ -98,3 +98,49 @@ def test_sample_documents_ingest_with_manifest_urls(settings: Settings) -> None:
     assert registry.get("test-scheme-alpha").is_sample
     assert registry.get("test-scheme-beta").state == "Maharashtra"
     assert registry.find_mentions("tell me about test scheme delta") == ["test-scheme-delta"]
+
+
+def build_sample_index(settings: Settings):
+    from fakes import HashingModel, OverlapCrossEncoder
+
+    from yojana.index.bm25 import BM25Index
+    from yojana.index.builder import BM25_FILE, BM25_PLAIN_FILE, IndexBuilder
+    from yojana.index.embedder import Embedder
+    from yojana.index.store import ChunkStore
+    from yojana.retrieve.hybrid import HybridRetriever
+    from yojana.retrieve.rerank import Reranker
+
+    shutil.copytree(REPO / "data" / "sample", settings.sample_dir, dirs_exist_ok=True)
+    cfg = settings.retrieval()
+    embedder = Embedder(cfg.embedding, factory=lambda c: HashingModel())
+    builder = IndexBuilder(settings, embedder=embedder)
+    build_documents(
+        settings, include_sample=True, counter=OfflineCounter(), on_changed=builder.apply_changes
+    )
+    builder.rebuild_sparse()
+    return HybridRetriever(
+        cfg.model_copy(update={"abstain_threshold": 0.3}),
+        ChunkStore.load(settings.processed_dir),
+        store=builder.store,
+        bm25=BM25Index.load(settings.index_dir / BM25_FILE),
+        bm25_plain=BM25Index.load(settings.index_dir / BM25_PLAIN_FILE),
+        embedder=embedder,
+        reranker=Reranker(cfg.reranker, factory=lambda c: OverlapCrossEncoder()),
+    )
+
+
+def test_sample_set_is_searchable_end_to_end(settings: Settings) -> None:
+    from yojana.retrieve.filters import build_filters
+
+    retriever = build_sample_index(settings)
+
+    docs = retriever.retrieve("documents required for test scheme delta disability certificate")
+    assert docs.chunks[0].chunk.chunk_id.startswith("test-scheme-delta")
+    assert docs.chunks[0].chunk.section == "documents"
+
+    hindi = retriever.retrieve("परीक्षण योजना बीटा आवश्यक दस्तावेज़ भूमि रिकॉर्ड")
+    assert hindi.chunks[0].chunk.scheme_id == "test-scheme-beta"
+
+    filters = build_filters("schemes for farmers", profile_state="Karnataka")
+    karnataka = retriever.retrieve("seed assistance for farmers", filters)
+    assert all(c.chunk.state in ("Karnataka", "ALL") for c in karnataka.candidates)
