@@ -1,0 +1,41 @@
+# Retrieval pipeline. Every stage can be switched off for ablations.
+
+mode: hybrid            # dense | bm25 | hybrid
+rerank: true
+contextual_headers: true
+query_rewrite: true
+
+dense_top_k: 30
+bm25_top_k: 30
+rrf_k: 60
+rerank_candidates: 20
+final_top_k: 5
+
+# Abstain when the best cross-encoder score (sigmoid, 0..1) is below this value.
+# Calibrated by `scripts/eval.ps1`; the report prints the recommended threshold.
+abstain_threshold: 0.15
+# Used instead when reranking is off: minimum cosine similarity of the best dense hit.
+dense_abstain_threshold: 0.78
+
+# Also embed chunks without their contextual header so the header ablation can run
+# without re-ingesting. Doubles embedding time at ingestion.
+store_plain_vectors: true
+
+embedding:
+  model: intfloat/multilingual-e5-small
+  backend: torch        # torch | onnx (install the "onnx" extra first)
+  batch_size: 32
+  query_prefix: "query: "
+  passage_prefix: "passage: "
+  max_seq_length: 512
+
+reranker:
+  model: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+  backend: torch
+  batch_size: 16
+  max_length: 512
+
+chunking:
+  max_tokens: 300
+  overlap: 0.15
+  min_tokens: 40

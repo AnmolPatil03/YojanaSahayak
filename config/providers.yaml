@@ -1,0 +1,101 @@
+# LLM providers, tried in list order. All are reached through their
+# OpenAI-compatible endpoints. Limits are the free-tier figures published by each
+# provider at the time of writing; they change often, so check the linked pages and
+# lower them here if your account shows smaller numbers. Budgeting uses these values
+# to skip a provider before calling it.
+#
+# Values support ${VAR} and ${VAR:-default} expansion from the environment / .env.
+
+providers:
+  - name: groq
+    label: Groq
+    # https://console.groq.com/docs/models  https://console.groq.com/settings/limits
+    base_url: https://api.groq.com/openai/v1
+    api_key_env: GROQ_API_KEY
+    model: llama-3.3-70b-versatile
+    rpm: 30
+    rpd: 1000
+    tpm: 12000
+    tpd: 100000
+    # A single request also counts against TPM, so keep prompts well under it.
+    max_input_tokens: 6000
+    max_output_tokens: 1024
+    supports_json_mode: true
+    trains_on_free_tier_data: false
+    enabled: true
+
+  - name: github
+    label: GitHub Models
+    # GitHub retired the GitHub Models inference API on 2026-07-30
+    # (https://github.blog/changelog/2026-07-30-github-models-is-now-retired/).
+    # The entry is kept, disabled, so the slot can be re-pointed at another
+    # OpenAI-compatible endpoint without touching code.
+    base_url: https://models.github.ai/inference
+    api_key_env: GITHUB_TOKEN
+    model: openai/gpt-4.1-mini
+    rpm: 15
+    rpd: 150
+    tpm: 40000
+    tpd: 400000
+    max_input_tokens: 8000
+    max_output_tokens: 1024
+    supports_json_mode: true
+    trains_on_free_tier_data: false
+    enabled: false
+
+  - name: openrouter
+    label: OpenRouter
+    # Only ":free" variants. The free roster rotates; see
+    # https://openrouter.ai/models?max_price=0 and swap the model id if this one goes away.
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+    model: nvidia/nemotron-3.5-super-vl:free
+    rpm: 20
+    rpd: 50
+    tpm: null
+    tpd: null
+    max_input_tokens: 12000
+    max_output_tokens: 1024
+    supports_json_mode: false
+    trains_on_free_tier_data: false
+    enabled: true
+    extra_headers:
+      X-Title: Yojana Sahayak
+
+  - name: gemini
+    label: Gemini
+    # https://ai.google.dev/gemini-api/docs/openai
+    # Free-tier prompts may be used to improve Google's products, so requests that
+    # carry a user's eligibility profile are never routed here.
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+    api_key_env: GEMINI_API_KEY
+    model: gemini-3.5-flash
+    rpm: 10
+    rpd: 250
+    tpm: 250000
+    tpd: null
+    max_input_tokens: 30000
+    max_output_tokens: 1024
+    supports_json_mode: true
+    trains_on_free_tier_data: true
+    enabled: true
+
+  - name: ollama
+    label: Ollama (offline)
+    base_url: ${OLLAMA_HOST:-http://localhost:11434}/v1
+    api_key_env: null
+    requires_key: false
+    offline: true
+    model: ${OLLAMA_MODEL:-gemma3:4b}
+    rpm: null
+    rpd: null
+    tpm: null
+    tpd: null
+    # Ollama's default context window is small; raise OLLAMA_CONTEXT_LENGTH on the
+    # Ollama server and this value together if you want longer prompts locally.
+    max_input_tokens: 3500
+    max_output_tokens: 768
+    supports_json_mode: true
+    trains_on_free_tier_data: false
+    timeout_s: 180
+    enabled: true

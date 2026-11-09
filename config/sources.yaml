@@ -1,0 +1,18 @@
+# Public sources for the scraper. robots.txt is always checked and obeyed, and
+# requests to the same host are spaced at least min_delay_s apart (never below 2s).
+
+user_agent: "YojanaSahayakBot/0.1 (educational research crawler; respects robots.txt)"
+min_delay_s: 2.5
+timeout_s: 30
+
+sources:
+  - name: myscheme
+    enabled: true
+    sitemap: https://www.myscheme.gov.in/sitemap.xml
+    start_urls: []
+    allow_patterns:
+      - "^https://www\\.myscheme\\.gov\\.in/(hi/)?schemes/[a-z0-9-]+/?$"
+    max_pages: 40
+    # Scheme pages are rendered client-side; static HTML holds only the site shell.
+    # Install the "render" extra and run `playwright install chromium` to use this.
+    render_js: true
