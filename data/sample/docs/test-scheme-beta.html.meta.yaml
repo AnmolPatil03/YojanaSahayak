@@ -1,0 +1,9 @@
+scheme_id: test-scheme-beta
+scheme_name: परीक्षण योजना बीटा
+ministry: काल्पनिक कृषि विभाग
+state: Maharashtra
+category: agriculture
+tags: [farmers, fictional]
+source_url: https://example.org/fictional/test-scheme-beta
+language: hi
+is_sample: true

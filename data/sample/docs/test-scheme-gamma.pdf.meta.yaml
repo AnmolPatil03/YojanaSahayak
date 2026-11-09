@@ -1,0 +1,8 @@
+scheme_id: test-scheme-gamma
+scheme_name: Test Scheme Gamma
+ministry: Ministry of Fictional Enterprise Development
+state: ALL
+category: business
+tags: [startup, entrepreneurs, fictional]
+source_url: https://example.org/fictional/test-scheme-gamma.pdf
+is_sample: true

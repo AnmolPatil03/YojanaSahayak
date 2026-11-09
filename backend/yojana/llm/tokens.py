@@ -13,7 +13,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+_DEVANAGARI = re.compile(r"[\u0900-\u097F]")
 _PER_MESSAGE_OVERHEAD = 4
 
 

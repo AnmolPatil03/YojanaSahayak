@@ -1,0 +1,8 @@
+scheme_id: test-scheme-alpha
+scheme_name: Test Scheme Alpha
+ministry: Ministry of Fictional Education Affairs
+state: ALL
+category: education
+tags: [scholarship, students, fictional]
+source_url: https://example.org/fictional/test-scheme-alpha
+is_sample: true
