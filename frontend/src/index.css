@@ -66,8 +66,9 @@
   --color-teal: var(--teal);
   --color-sand: var(--sand);
   --color-marigold: var(--marigold);
-  --font-sans: 'Plus Jakarta Sans', 'Noto Sans Devanagari', ui-sans-serif, system-ui, sans-serif;
-  --font-deva: 'Noto Sans Devanagari', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Manrope Variable', 'Mukta', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Mukta', ui-sans-serif, system-ui, sans-serif;
+  --font-deva: 'Mukta', 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -84,9 +85,22 @@
       color 400ms ease;
   }
 
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
   :lang(hi) {
     font-family: var(--font-deva);
     line-height: 1.7;
+  }
+
+  :lang(hi) :is(h1, h2, h3),
+  :is(h1, h2, h3):lang(hi) {
+    font-family: var(--font-deva);
+    letter-spacing: 0;
   }
 
   :focus-visible {
@@ -137,6 +151,14 @@
 
 @utility label {
   @apply mb-1.5 block text-sm font-semibold text-fg;
+}
+
+/* The wordmark is set in capitals; Devanagari has no case, so Hindi is unaffected. */
+@utility wordmark {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
 }
 
 @utility muted {

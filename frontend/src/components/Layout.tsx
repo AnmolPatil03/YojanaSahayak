@@ -86,12 +86,9 @@ export function Layout({ children }: { children: ReactNode }) {
       </a>
       <header className="no-print sticky top-0 z-40 border-b border-line/70 bg-bg/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <NavLink
-            to="/"
-            className="flex items-center gap-2 rounded-lg font-extrabold tracking-tight"
-          >
+          <NavLink to="/" className="flex items-center gap-2 rounded-lg">
             <Logo className="size-8" />
-            <span className="text-lg">{t('app.name')}</span>
+            <span className="wordmark text-base sm:text-lg">{t('app.name')}</span>
           </NavLink>
           <nav className="ms-6 hidden items-center gap-1 md:flex" aria-label="Main">
             {LINKS.map((link) => (
@@ -161,7 +158,7 @@ export function Layout({ children }: { children: ReactNode }) {
         {children}
       </main>
       <footer className="no-print border-t border-line/70 py-6 text-center text-sm text-fg-muted">
-        {t('app.name')} · {t('app.tagline')}
+        <span className="wordmark text-xs">{t('app.name')}</span> · {t('app.tagline')}
       </footer>
     </div>
   )

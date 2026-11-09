@@ -91,7 +91,7 @@ progress tracker is driven by those events.
 | Ingestion | httpx, BeautifulSoup, PyMuPDF, optional Playwright for JavaScript-rendered pages |
 | LLMs | `openai` SDK against OpenAI-compatible endpoints, tiktoken, SQLite for usage and cache |
 | MCP | official `mcp` Python SDK (`MCPServer`, the 2.x name of FastMCP) |
-| Frontend | Vite, React 19, TypeScript, Tailwind CSS 4, Framer Motion, TanStack Query, Recharts, lucide-react |
+| Frontend | Vite, React 19, TypeScript, Tailwind CSS 4, Framer Motion, TanStack Query, Recharts, lucide-react; Bricolage Grotesque, Manrope and Mukta fonts bundled with Fontsource |
 | Quality | pytest, respx, ruff, ESLint, Prettier, GitHub Actions |
 
 ## Running on Windows, step by step
