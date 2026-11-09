@@ -1,0 +1,358 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Brand palette: Deep Teal #0F4C5C, Soft Sand #F3E9D2, Marigold #FF9F1C.
+  Every other colour below is a tint or shade of these three. Marigold on sand is
+  only 1.7:1, so marigold is used for fills, rings and accents, never for text on
+  sand; text placed on marigold is always deep teal (4.6:1).
+*/
+:root {
+  --teal: #0f4c5c;
+  --sand: #f3e9d2;
+  --marigold: #ff9f1c;
+
+  --bg: var(--sand);
+  --surface: #faf5eb;
+  --surface-2: #ebe3cc;
+  --fg: var(--teal);
+  --fg-muted: #3d6b74;
+  --border: #cacdbd;
+  --accent: var(--marigold);
+  --on-accent: var(--teal);
+  --brand: var(--teal);
+  --on-brand: var(--sand);
+  --accent-soft: #fde3bd;
+  --brand-soft: #d6ded6;
+  --mesh-a: #e9dcbd;
+  --mesh-b: #c9d3c9;
+  --mesh-c: #f7efdc;
+  --shadow: 15 76 92;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0a2e38;
+  --surface: #0c3c48;
+  --surface-2: #0e4655;
+  --fg: var(--sand);
+  --fg-muted: #adb1a4;
+  --border: #2f4c51;
+  --brand: var(--sand);
+  --on-brand: var(--teal);
+  --accent-soft: #3d4a35;
+  --brand-soft: #134f5e;
+  --mesh-a: #0f4c5c;
+  --mesh-b: #0a2e38;
+  --mesh-c: #123f4a;
+  --shadow: 0 0 0;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-brand: var(--brand);
+  --color-on-brand: var(--on-brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-teal: var(--teal);
+  --color-sand: var(--sand);
+  --color-marigold: var(--marigold);
+  --font-sans: 'Plus Jakarta Sans', 'Noto Sans Devanagari', ui-sans-serif, system-ui, sans-serif;
+  --font-deva: 'Noto Sans Devanagari', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    transition:
+      background-color 400ms ease,
+      color 400ms ease;
+  }
+
+  :lang(hi) {
+    font-family: var(--font-deva);
+    line-height: 1.7;
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 4px var(--marigold),
+      0 0 0 6px var(--teal);
+    border-radius: 0.6rem;
+  }
+
+  ::selection {
+    background: var(--marigold);
+    color: var(--teal);
+  }
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-surface;
+  box-shadow:
+    0 1px 2px rgb(var(--shadow) / 0.06),
+    0 8px 24px -12px rgb(var(--shadow) / 0.18);
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,box-shadow,transform] duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply btn bg-accent text-on-accent hover:brightness-105 active:scale-[0.98] disabled:bg-surface-2 disabled:text-fg-muted disabled:opacity-100;
+}
+
+@utility btn-brand {
+  @apply btn bg-brand text-on-brand hover:opacity-90 active:scale-[0.98];
+}
+
+@utility btn-ghost {
+  @apply btn text-fg hover:bg-surface-2;
+}
+
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2;
+}
+
+@utility field {
+  @apply w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-fg placeholder:text-fg-muted;
+}
+
+@utility label {
+  @apply mb-1.5 block text-sm font-semibold text-fg;
+}
+
+@utility muted {
+  @apply text-fg-muted;
+}
+
+@layer components {
+  .prose-answer p {
+    @apply my-2 leading-relaxed;
+  }
+
+  .prose-answer ul,
+  .prose-answer ol {
+    @apply my-2 space-y-1 ps-5;
+  }
+
+  .prose-answer ul {
+    list-style: disc;
+  }
+
+  .prose-answer ol {
+    list-style: decimal;
+  }
+}
+
+/* Unlayered so it wins over the card utility's own shadow. */
+.search-shell:focus-within {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--marigold),
+    0 0 0 6px var(--teal);
+}
+
+.search-shell input:focus-visible {
+  box-shadow: none;
+}
+
+.mesh {
+  background:
+    radial-gradient(40% 55% at 20% 30%, var(--mesh-a), transparent 70%),
+    radial-gradient(45% 50% at 80% 20%, var(--mesh-b), transparent 70%),
+    radial-gradient(50% 60% at 60% 85%, var(--mesh-c), transparent 70%), var(--bg);
+  background-size: 160% 160%;
+  animation: mesh-drift 28s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-drift {
+  0% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      50% 100%,
+      0 0;
+  }
+  100% {
+    background-position:
+      40% 30%,
+      60% 40%,
+      30% 60%,
+      0 0;
+  }
+}
+
+.caret > :last-child:not(ul, ol)::after,
+.caret > :is(ul, ol):last-child > li:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 0.55ch;
+  height: 1.1em;
+  margin-inline-start: 2px;
+  vertical-align: text-bottom;
+  background: var(--marigold);
+  animation: caret-blink 1s steps(2, start) infinite;
+}
+
+@keyframes caret-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.shimmer-border {
+  position: relative;
+  isolation: isolate;
+}
+
+.shimmer-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    var(--marigold),
+    transparent 25%,
+    transparent 50%,
+    var(--marigold) 75%,
+    transparent
+  );
+  animation: shimmer-spin 4s linear infinite;
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shimmer-spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--surface) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-move 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-move {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.wave span {
+  display: inline-block;
+  width: 3px;
+  margin: 0 1px;
+  border-radius: 2px;
+  background: currentColor;
+  animation: wave 900ms ease-in-out infinite;
+}
+
+.wave span:nth-child(2) {
+  animation-delay: 120ms;
+}
+.wave span:nth-child(3) {
+  animation-delay: 240ms;
+}
+.wave span:nth-child(4) {
+  animation-delay: 360ms;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    height: 4px;
+  }
+  50% {
+    height: 16px;
+  }
+}
+
+.strike {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 55%;
+  background-size: 0% 1.5px;
+  transition: background-size 350ms ease;
+}
+
+.strike[data-done='true'] {
+  background-size: 100% 1.5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .mesh,
+  .shimmer-border::before,
+  .skeleton,
+  .wave span {
+    animation: none !important;
+  }
+
+  .caret > :last-child::after,
+  .caret li:last-child::after {
+    animation: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .card {
+    box-shadow: none;
+    border-color: #999;
+  }
+}
+
+.print-only {
+  display: none;
+}
