@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Info, X } from 'lucide-react'
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { usePreferences } from './preferences'
 
 interface Toast {
   id: number
@@ -16,6 +17,7 @@ const ToastContext = createContext<ToastState | null>(null)
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
+  const { t } = usePreferences()
   const nextId = useRef(1)
 
   const dismiss = useCallback((id: number) => {
@@ -57,7 +59,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 type="button"
                 onClick={() => dismiss(toast.id)}
                 className="rounded-md p-0.5 opacity-80 hover:opacity-100"
-                aria-label="Dismiss"
+                aria-label={t('citation.close')}
               >
                 <X className="size-4" aria-hidden />
               </button>
