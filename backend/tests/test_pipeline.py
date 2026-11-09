@@ -101,14 +101,14 @@ def test_sample_documents_ingest_with_manifest_urls(settings: Settings) -> None:
 
 
 def build_sample_index(settings: Settings):
-    from fakes import HashingModel, OverlapCrossEncoder
-
     from yojana.index.bm25 import BM25Index
     from yojana.index.builder import BM25_FILE, BM25_PLAIN_FILE, IndexBuilder
     from yojana.index.embedder import Embedder
     from yojana.index.store import ChunkStore
     from yojana.retrieve.hybrid import HybridRetriever
     from yojana.retrieve.rerank import Reranker
+
+    from fakes import HashingModel, OverlapCrossEncoder
 
     shutil.copytree(REPO / "data" / "sample", settings.sample_dir, dirs_exist_ok=True)
     cfg = settings.retrieval()

@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from fakes import HashingModel, OverlapCrossEncoder
 
 from yojana.config import EmbeddingConfig, RerankerConfig, RetrievalConfig
 from yojana.index.bm25 import BM25Index
@@ -14,6 +13,8 @@ from yojana.ingest.models import Chunk
 from yojana.retrieve.filters import SearchFilters, build_filters
 from yojana.retrieve.hybrid import HybridRetriever
 from yojana.retrieve.rerank import Reranker
+
+from fakes import HashingModel, OverlapCrossEncoder
 
 
 def chunk(cid: str, scheme: str, state: str, category: str, section: str, text: str) -> Chunk:

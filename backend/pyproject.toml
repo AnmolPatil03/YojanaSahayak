@@ -67,6 +67,10 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "C4", "PTH", "RET"]
 # SIM905 would expand the whitespace-separated stopword list into hundreds of lines.
 ignore = ["RUF001", "RUF002", "RUF003", "N818", "SIM905"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["yojana"]
+known-local-folder = ["fakes", "test_pipeline"]
+
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["N802", "PTH"]
 

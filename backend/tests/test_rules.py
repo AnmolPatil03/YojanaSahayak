@@ -5,7 +5,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-from fakes import FakeGateway
 
 from yojana.config import Settings
 from yojana.index.store import ChunkStore
@@ -13,6 +12,8 @@ from yojana.ingest.models import Chunk
 from yojana.ingest.review_cli import ReviewError, parse_value, render, run, set_field
 from yojana.ingest.rules_extract import extract_all, extract_for_scheme, select_rule_chunks
 from yojana.rules import RulesRecord, RulesStore
+
+from fakes import FakeGateway
 
 REPO = Path(__file__).resolve().parents[2]
 
