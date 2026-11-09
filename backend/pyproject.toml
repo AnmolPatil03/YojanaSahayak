@@ -20,7 +20,7 @@ dependencies = [
     # openai 3.x moved to httpx2, which respx cannot intercept.
     "openai>=2.30,<3",
     "tiktoken>=0.8",
-    "sentence-transformers>=3.3",
+    "sentence-transformers>=4.1",
     "lancedb>=0.17",
     "pyarrow>=17",
     "numpy>=2.1",
@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-onnx = ["sentence-transformers[onnx]>=3.3"]
+onnx = ["sentence-transformers[onnx]>=4.1"]
 render = ["playwright>=1.48"]
 dev = [
     "pytest>=8.3",
@@ -64,7 +64,8 @@ target-version = "py311"
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "C4", "PTH", "RET"]
 # RUF001-003 flag Devanagari and the rupee sign, which this project uses on purpose.
 # N818 would rename AllProvidersExhausted, whose name is part of the public API.
-ignore = ["RUF001", "RUF002", "RUF003", "N818"]
+# SIM905 would expand the whitespace-separated stopword list into hundreds of lines.
+ignore = ["RUF001", "RUF002", "RUF003", "N818", "SIM905"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["N802", "PTH"]

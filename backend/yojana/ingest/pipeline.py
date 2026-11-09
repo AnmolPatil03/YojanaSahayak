@@ -1,4 +1,4 @@
-"""Incremental ingestion: scrape, parse and chunk documents into `data/processed/`.
+"""Incremental ingestion: scrape, parse, chunk and index scheme documents.
 
 Documents are tracked by content hash in `data/processed/ingest_state.json`, so a
 re-run only touches files that are new, changed or deleted.
@@ -257,12 +257,25 @@ def run_pipeline(
     max_pages: int | None = None,
 ) -> IngestReport:
     """Run the incremental pipeline used by the CLI and the admin endpoint."""
+    from yojana.index.builder import IndexBuilder
+
     settings.ensure_dirs()
     if scrape:
         from yojana.ingest import scrape as scraper
 
         scraper.run(settings, max_pages=max_pages)
-    return build_documents(settings, include_sample=include_sample, force=force)
+
+    builder = IndexBuilder(settings)
+    if force:
+        builder.store.reset()
+    report = build_documents(
+        settings, include_sample=include_sample, force=force, on_changed=builder.apply_changes
+    )
+    if report.chunks_total and builder.store.count() == 0:
+        logger.info("Vector index is empty; embedding all %d chunks", report.chunks_total)
+        builder.rebuild_dense()
+    builder.rebuild_sparse()
+    return report
 
 
 def main(argv: list[str] | None = None) -> None:
