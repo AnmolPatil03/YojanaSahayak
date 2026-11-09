@@ -94,29 +94,244 @@ progress tracker is driven by those events.
 | Frontend | Vite, React 19, TypeScript, Tailwind CSS 4, Framer Motion, TanStack Query, Recharts, lucide-react |
 | Quality | pytest, respx, ruff, ESLint, Prettier, GitHub Actions |
 
-## Setup on Windows
+## Running on Windows, step by step
 
-Requirements: Python 3.11+ (developed on 3.13), the current Node.js LTS, and Git. No GPU
-is needed. Everything runs on a CPU laptop with 8–16 GB of RAM.
+Everything below is typed into a PowerShell terminal. In VS Code, open the project
+folder (File → Open Folder), then open the terminal with Ctrl + \` and check that the
+dropdown next to **+** says *powershell*. Every command is run from the project root
+(the folder that contains `README.md`) unless the step says otherwise.
+
+No GPU is needed. Everything runs on a CPU laptop with 8–16 GB of RAM.
+
+### 1. Check the prerequisites
 
 ```powershell
-git clone <your fork url> yojana-sahayak
-cd yojana-sahayak
-powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+py -3.13 --version
+node --version
+git --version
 ```
 
-`setup.ps1` creates `.venv`, installs the CPU-only PyTorch wheel and the backend (with
-dev tools), runs `npm ci` for the frontend, and copies `.env.example` to `.env`.
+**Purpose:** confirms that Python (3.11 or newer; developed on 3.13), Node.js (current LTS)
+and Git are installed and on `PATH`.
 
-Optional flags:
+- **A command isn't recognised:** install that tool (python.org, nodejs.org,
+  git-scm.com), then close and reopen VS Code so its terminal picks up the new `PATH`.
+- **`py` doesn't exist:** use `python` instead of `py -3.13` in step 3.
 
-- `-Onnx` installs ONNX Runtime. Then set `backend: onnx` under `embedding` and
-  `reranker` in `config/retrieval.yaml` for faster CPU inference.
-- `-Render` installs Playwright and Chromium for pages that only render with JavaScript
-  (myScheme pages are like this).
+### 2. Allow PowerShell to run the virtual environment's activation script (once)
 
-The two models download from Hugging Face on first use, roughly 470 MB each, into
-`data/cache/models`.
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+**Purpose:** Windows blocks local `.ps1` files by default, and that includes
+`.venv\Scripts\Activate.ps1`. This setting allows local scripts for your user account
+only, and it never needs to be run again.
+
+### 3. Create the virtual environment
+
+```powershell
+py -3.13 -m venv .venv
+```
+
+**Purpose:** creates an isolated Python environment in `.venv` so the project's packages
+don't mix with anything else installed on the machine.
+
+### 4. Activate it
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+**Purpose:** points `python` and `pip` in this terminal at `.venv`. The prompt starts
+with `(.venv)` when it worked.
+
+- Repeat this in every new terminal.
+- Alternatively, press Ctrl+Shift+P, choose **Python: Select Interpreter**, and pick
+  `.venv\Scripts\python.exe`. VS Code then activates the environment in new terminals
+  automatically.
+
+### 5. Upgrade pip
+
+```powershell
+python -m pip install --upgrade pip
+```
+
+**Purpose:** older pip versions sometimes fail to pick the right prebuilt wheels for
+Python 3.13.
+
+### 6. Install CPU-only PyTorch
+
+```powershell
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+```
+
+**Purpose:** sentence-transformers needs PyTorch. Installing it first, from the CPU index
+(about 130 MB), stops pip from fetching a much larger GPU build.
+
+### 7. Install the backend
+
+```powershell
+pip install -e "backend[dev]"
+```
+
+**Purpose:** installs the `yojana` package in editable mode, so code changes apply
+without reinstalling. It also installs FastAPI, LanceDB, the MCP SDK and the rest, plus
+the test and lint tools (`dev`). Editable mode also gives you the `yojana-review` command
+on `PATH`.
+
+**Optional extras:**
+
+- **ONNX Runtime.** `pip install -e "backend[dev,onnx]"` adds faster CPU inference. To
+  use it, set `backend: onnx` under `embedding` and `reranker` in
+  `config/retrieval.yaml`.
+- **Playwright.** `pip install -e "backend[dev,render]"` followed by
+  `python -m playwright install chromium` adds a headless browser for scraping pages that
+  only render with JavaScript, such as myScheme.
+
+### 8. Create your `.env` and add API keys
+
+```powershell
+Copy-Item .env.example .env
+code .env
+```
+
+**Purpose:** `.env` holds your API keys and local settings. It is gitignored, so keys
+never get committed. Fill in at least one provider key from the table under
+[Free API keys](#free-api-keys), or set up Ollama for fully offline use:
+
+```powershell
+ollama pull gemma3:4b
+```
+
+Then set `OLLAMA_MODEL=gemma3:4b` in `.env`. The pull is about 3.3 GB; any small
+instruct model you already have works too.
+
+### 9. Install the frontend packages
+
+```powershell
+cd frontend
+npm ci
+cd ..
+```
+
+**Purpose:** installs the exact package versions recorded in `frontend/package-lock.json`
+(React, Vite, Tailwind, Framer Motion and so on) into `frontend/node_modules`.
+
+### 10. Ingest documents and build the indexes
+
+```powershell
+python -m yojana.ingest.pipeline --sample
+```
+
+**Purpose:** parses the documents and builds the indexes. In order, it:
+
+1. parses the documents in `data\raw\` (plus the four fictional sample schemes with
+   `--sample`) into scheme sections;
+2. splits them into chunks with contextual headers;
+3. embeds the chunks into LanceDB and builds the BM25 index;
+4. installs the reviewed rules for the sample schemes.
+
+The first run downloads the embedding and reranker models (roughly 470 MB each) into
+`data\cache\models`. Re-runs only process new or changed files.
+
+**Other options:**
+
+- **Real scheme pages:** add `--scrape --max-pages 20` to fetch the pages listed in
+  `config\sources.yaml` first, and `--rules` to extract eligibility rules for new or
+  changed schemes with the LLM.
+- **Your own files:** drop PDFs or HTML files anywhere under `data\raw\` and run the
+  command again. A `<file>.meta.yaml` next to a file can set `scheme_id`, `scheme_name`,
+  `ministry`, `state`, `category` and `source_url` when they can't be inferred.
+- **Rebuilding after changing the embedding model:** use `--force` to reprocess
+  everything.
+
+The scraper reads robots.txt before touching a host and follows it, including
+`Crawl-delay`. It waits at least two seconds between requests and sends an identifying
+User-Agent. Every saved file is recorded with its source URL in
+`data\raw\manifest.jsonl`.
+
+### 11. Review extracted eligibility rules (only if you used `--rules`)
+
+```powershell
+yojana-review interactive
+```
+
+**Purpose:** rules extracted by the LLM are saved with `needs_review: true`, and the
+eligibility engine ignores them until a person checks them against the source passages.
+`interactive` steps through each pending scheme and lets you approve or edit it.
+
+Other commands:
+
+```powershell
+yojana-review list --pending
+yojana-review show <scheme_id>
+yojana-review set <scheme_id> max_age 35
+yojana-review approve <scheme_id>
+```
+
+To try unreviewed rules anyway, set `YOJANA_ALLOW_UNREVIEWED_RULES=true` in `.env`; the
+UI marks them as not yet reviewed.
+
+### 12. Start the backend (terminal 1)
+
+```powershell
+python -m uvicorn yojana.api.main:app --app-dir backend --reload --reload-dir backend\yojana --port 8000
+```
+
+**Purpose:** serves the API on <http://127.0.0.1:8000>, with interactive docs at
+<http://127.0.0.1:8000/docs>. `--reload` restarts the server when backend code changes.
+The models warm up in the background at startup, so the first question can take a few
+seconds longer.
+
+### 13. Start the frontend (terminal 2)
+
+Open a second terminal with the **+** button (or split the current one), then run:
+
+```powershell
+cd frontend
+npm run dev
+```
+
+**Purpose:** starts the Vite dev server on <http://localhost:5173>. It forwards every
+`/api` request to the backend on port 8000, so both servers must be running. Open
+<http://localhost:5173> in your browser.
+
+To stop either server, press Ctrl+C in its terminal.
+
+### 14. Run the tests (optional)
+
+```powershell
+cd backend
+python -m pytest -m "not slow"
+ruff check .
+cd ..\frontend
+npm run lint
+npm run typecheck
+npm run build
+cd ..
+```
+
+**Purpose:** these are the same checks CI runs. Tests marked `slow` load the real models
+and are skipped here and in CI; run `python -m pytest -m slow` to include them.
+
+### If something goes wrong
+
+- **`Activate.ps1 cannot be loaded`:** step 2 hasn't been run.
+- **`No module named yojana`:** the virtual environment isn't active (step 4), or step 7
+  failed.
+- **Every answer says the providers are unavailable:** no provider is reachable. Check
+  the key in `.env`, or check that Ollama is running. The Insights page shows each
+  provider's status.
+- **Port 8000 or 5173 is already in use:** an earlier run is still alive. Close its
+  terminal, or pass a different `--port` to uvicorn. If you change the backend port, set
+  `$env:VITE_API_PROXY="http://127.0.0.1:<port>"` in the frontend terminal before
+  `npm run dev`.
+- **Model download fails during step 10:** check your internet connection and run the
+  command again; work already done is skipped.
+
+The `scripts\*.ps1` files wrap these same commands, if you'd rather run one file per
+task.
 
 ## Free API keys
 
@@ -134,45 +349,7 @@ Put the keys you have in `.env`. Every provider is optional. Order and limits li
 The limits in `providers.yaml` are the published free-tier numbers. If your account
 shows lower ones, lower them there, because budgets are checked before each call.
 
-## Ingesting data
-
-```powershell
-# Fictional sample set (four invented schemes) to try everything offline
-scripts\ingest.ps1 -Sample
-
-# Scrape public pages listed in config\sources.yaml, then extract eligibility rules
-scripts\ingest.ps1 -Scrape -MaxPages 20 -Rules
-```
-
-- **Your own files.** Drop PDFs or HTML files anywhere under `data\raw\` and run
-  `scripts\ingest.ps1` again; only new or changed files are processed. A
-  `<file>.meta.yaml` next to a file can set `scheme_id`, `scheme_name`, `ministry`,
-  `state`, `category` and `source_url` when they cannot be inferred.
-- **Reviewing rules.** Extracted eligibility rules are saved with `needs_review: true`,
-  and the engine ignores them until you review them:
-
-  ```powershell
-  .venv\Scripts\yojana-review interactive        # step through pending schemes
-  .venv\Scripts\yojana-review show <scheme_id>   # rules with their source passages
-  .venv\Scripts\yojana-review set <scheme_id> max_age 35
-  .venv\Scripts\yojana-review approve <scheme_id>
-  ```
-
-  To try unreviewed rules anyway, set `YOJANA_ALLOW_UNREVIEWED_RULES=true`; the UI marks
-  them as not yet reviewed.
-
-The scraper reads robots.txt before touching a host and follows it, including
-`Crawl-delay`. It waits at least two seconds between requests and sends an identifying
-User-Agent. Every saved file is recorded with its source URL in `data\raw\manifest.jsonl`.
-
-## Running
-
-```powershell
-scripts\dev.ps1
-```
-
-This starts the API on <http://127.0.0.1:8000> (interactive docs at `/docs`) and the
-frontend on <http://localhost:5173>. The models warm up in the background at startup.
+## API
 
 | Endpoint | Purpose |
 |---|---|
@@ -192,12 +369,13 @@ contain profile values or message text at INFO level.
 ## MCP usage
 
 ```powershell
-scripts\mcp.ps1               # run the stdio server
-scripts\mcp.ps1 -PrintConfig  # print a Claude Desktop entry with your paths
+python -m yojana.mcp_server
 ```
 
-Add the printed block to `%APPDATA%\Claude\claude_desktop_config.json`. It looks like
-this:
+This starts the stdio server. You don't normally run it by hand: an MCP client such as
+Claude Desktop launches it. To register it there, add this entry to
+`%APPDATA%\Claude\claude_desktop_config.json`, adjusting the paths to wherever you
+cloned the project:
 
 ```json
 {
@@ -218,8 +396,14 @@ The tools are `search_schemes(query, state?, category?, top_k?)`,
 ## Evaluation
 
 ```powershell
-scripts\eval.ps1 -Sample     # questions about the fictional sample set
-scripts\eval.ps1             # your verified questions in data\eval\golden.jsonl
+# Questions about the fictional sample set (ingest with --sample first)
+python -m yojana.eval.run --golden data\eval\sample_golden.jsonl
+
+# Your own verified questions
+python -m yojana.eval.run --golden data\eval\golden.jsonl
+
+# Retrieval only, no LLM calls
+python -m yojana.eval.run --golden data\eval\sample_golden.jsonl --no-generation
 ```
 
 Reports go to `reports\eval-<timestamp>.json` and `.md`, and the Insights page shows the
@@ -229,8 +413,8 @@ latest one. The LLM response cache is on during evaluation, so reruns cost no qu
 questions:
 
 ```powershell
-.venv\Scripts\python -m yojana.eval.bootstrap propose --n 20   # candidates from random chunks
-.venv\Scripts\python -m yojana.eval.bootstrap verify           # accept, edit or reject each
+python -m yojana.eval.bootstrap propose --n 20   # candidates from random chunks
+python -m yojana.eval.bootstrap verify           # accept, edit or reject each
 ```
 
 Only accepted questions are written to `golden.jsonl`, marked `verified: true`. The
@@ -250,7 +434,7 @@ format is in `data/eval/golden.schema.json`.
 The example report was produced on a machine without PyTorch or access to the model
 hub, so only BM25 could run. The harness marks a configuration as skipped whenever its
 index or model is missing, rather than quietly falling back to BM25 and reporting that
-as hybrid. Run `scripts\eval.ps1 -Sample` after ingesting to fill in the other rows,
+as hybrid. Run the sample evaluation command above after ingesting to fill in the other rows,
 along with faithfulness, citation precision, abstention accuracy and latency. BM25
 without contextual headers does poorly here because the scheme name appears only in the
 header, which is the case the header ablation is designed to show.
@@ -299,15 +483,6 @@ its scheme, while the UI still displays the raw chunk text.
 - Faithfulness is judged by another LLM, which is a useful signal but not ground truth.
 - This is not an official government service. Always confirm details on the scheme's
   official page before applying.
-
-## Development
-
-```powershell
-cd backend; ..\.venv\Scripts\python -m pytest -m "not slow"; ..\.venv\Scripts\ruff check .
-cd ..\frontend; npm run lint; npm run typecheck; npm run build
-```
-
-Tests marked `slow` load the real models and are skipped in CI.
 
 ## License
 
