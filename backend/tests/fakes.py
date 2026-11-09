@@ -53,6 +53,13 @@ class FakeGateway:
     """Answers `complete_json` / `complete` / `stream` from canned replies."""
 
     def __init__(self, replies: list[object] | None = None, provider: str = "fake") -> None:
+        from yojana.llm.tokens import TokenCounter
+
+        class _Counter(TokenCounter):
+            def count(self, text: str) -> int:
+                return self.heuristic(text)
+
+        self.counter = _Counter()
         self.replies = list(replies or [])
         self.provider = provider
         self.calls: list[dict[str, object]] = []

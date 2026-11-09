@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Golden evaluation question",
+  "description": "One JSON object per line in golden.jsonl. Only lines with verified: true are used.",
+  "type": "object",
+  "required": ["id", "question", "verified"],
+  "properties": {
+    "id": { "type": "string", "description": "Stable id, e.g. q0001." },
+    "question": { "type": "string" },
+    "language": { "type": "string", "enum": ["en", "hi"], "default": "en" },
+    "answerable": {
+      "type": "boolean",
+      "default": true,
+      "description": "false for questions the documents do not cover; the system should abstain."
+    },
+    "relevant": {
+      "type": "array",
+      "description": "Passages that answer the question. A retrieved chunk counts as relevant when it belongs to the scheme and, if given, the section.",
+      "items": {
+        "type": "object",
+        "required": ["scheme_id"],
+        "properties": {
+          "scheme_id": { "type": "string" },
+          "section": {
+            "type": ["string", "null"],
+            "enum": ["overview", "benefits", "eligibility", "exclusions", "documents", "application", "faq", "other", null]
+          }
+        }
+      }
+    },
+    "reference_answer": { "type": ["string", "null"] },
+    "verified": { "type": "boolean", "description": "Set to true only after checking the question and answer against the source." },
+    "notes": { "type": ["string", "null"] }
+  }
+}

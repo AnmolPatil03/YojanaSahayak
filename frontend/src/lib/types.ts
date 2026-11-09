@@ -207,11 +207,21 @@ export interface StageState {
 
 export interface EvalRun {
   name: string
+  label: string
+  status: 'ok' | 'skipped'
+  reason?: string
   config: Record<string, unknown>
-  retrieval: Record<string, number>
-  generation?: Record<string, number | null>
-  latency?: { p50_ms: number; p95_ms: number }
   questions: number
+  retrieval: Record<string, number>
+}
+
+export interface EvalGeneration {
+  status: 'ok' | 'skipped'
+  reason?: string
+  faithfulness?: number | null
+  citation_precision?: number | null
+  abstention_accuracy?: number | null
+  latency?: { p50_ms: number; p95_ms: number; cached_share: number }
 }
 
 export interface EvalReport {
@@ -219,12 +229,19 @@ export interface EvalReport {
   corpus: string
   golden_file: string
   questions: number
+  answerable: number
+  unanswerable: number
+  chunks?: number
   runs: EvalRun[]
-  abstention?: {
+  abstention: {
+    score: string
+    current_threshold: number
+    accuracy_at_current: number | null
     recommended_threshold: number | null
-    sweep: { threshold: number; accuracy: number }[]
-  }
-  notes?: string[]
+    sweep: { threshold: number; accuracy: number; balanced: number }[]
+  } | null
+  generation: EvalGeneration | null
+  notes: string[]
   file?: string
   example?: boolean
 }

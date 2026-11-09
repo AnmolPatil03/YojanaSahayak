@@ -12,6 +12,7 @@ const Explorer = lazy(() => import('./pages/Explorer'))
 const SchemeDetail = lazy(() => import('./pages/SchemeDetail'))
 const Eligibility = lazy(() => import('./pages/Eligibility'))
 const Compare = lazy(() => import('./pages/Compare'))
+const Insights = lazy(() => import('./pages/Insights'))
 
 function NotFound() {
   const { t } = usePreferences()
@@ -52,6 +53,7 @@ export default function App() {
             <Route path="/schemes/:id" element={<SchemeDetail />} />
             <Route path="/eligibility" element={<Eligibility />} />
             <Route path="/compare" element={<Compare />} />
+            <Route path="/insights" element={<Insights />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
