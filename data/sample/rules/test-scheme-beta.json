@@ -1,0 +1,62 @@
+{
+  "scheme_id": "test-scheme-beta",
+  "scheme_name": "परीक्षण योजना बीटा",
+  "rules": {
+    "min_age": {
+      "value": 18,
+      "chunk_id": "test-scheme-beta::eace8d::eligibility::000"
+    },
+    "max_age": {
+      "value": null,
+      "chunk_id": null
+    },
+    "genders": {
+      "value": null,
+      "chunk_id": null
+    },
+    "states": {
+      "value": [
+        "Maharashtra"
+      ],
+      "chunk_id": "test-scheme-beta::eace8d::eligibility::000"
+    },
+    "max_annual_family_income": {
+      "value": null,
+      "chunk_id": null
+    },
+    "social_categories": {
+      "value": null,
+      "chunk_id": null
+    },
+    "occupations": {
+      "value": [
+        "farmer"
+      ],
+      "chunk_id": "test-scheme-beta::eace8d::eligibility::000"
+    },
+    "education_levels": {
+      "value": null,
+      "chunk_id": null
+    },
+    "disability_required": {
+      "value": null,
+      "chunk_id": null
+    },
+    "residence": {
+      "value": "rural",
+      "chunk_id": "test-scheme-beta::eace8d::eligibility::000"
+    },
+    "other_conditions": []
+  },
+  "needs_review": false,
+  "reviewed_at": "2026-11-09T00:00:00+00:00",
+  "reviewed_by": "sample-data",
+  "extracted_at": null,
+  "extracted_by": "hand-written",
+  "content_hash": null,
+  "source_chunk_ids": [
+    "test-scheme-beta::eace8d::eligibility::000"
+  ],
+  "previous": null,
+  "notes": "Hand-written rules for a fictional sample scheme."
+}

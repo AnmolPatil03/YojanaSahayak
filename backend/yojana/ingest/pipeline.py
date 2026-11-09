@@ -1,4 +1,4 @@
-"""Incremental ingestion: scrape, parse, chunk and index scheme documents.
+"""Incremental ingestion: scrape, parse, chunk, index and extract rules.
 
 Documents are tracked by content hash in `data/processed/ingest_state.json`, so a
 re-run only touches files that are new, changed or deleted.
@@ -7,6 +7,7 @@ re-run only touches files that are new, changed or deleted.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import logging
 from collections.abc import Callable, Iterator
@@ -40,6 +41,7 @@ class IngestReport:
     chunks_total: int = 0
     schemes_total: int = 0
     changed_schemes: set[str] = field(default_factory=set)
+    rules: dict[str, str] = field(default_factory=dict)
 
     @property
     def changed(self) -> bool:
@@ -55,6 +57,7 @@ class IngestReport:
             "chunks_total": self.chunks_total,
             "schemes_total": self.schemes_total,
             "changed_schemes": sorted(self.changed_schemes),
+            "rules": self.rules,
         }
 
 
@@ -255,9 +258,11 @@ def run_pipeline(
     include_sample: bool = False,
     force: bool = False,
     max_pages: int | None = None,
+    extract_rules: bool = False,
 ) -> IngestReport:
     """Run the incremental pipeline used by the CLI and the admin endpoint."""
     from yojana.index.builder import IndexBuilder
+    from yojana.rules import RulesStore
 
     settings.ensure_dirs()
     if scrape:
@@ -275,6 +280,13 @@ def run_pipeline(
         logger.info("Vector index is empty; embedding all %d chunks", report.chunks_total)
         builder.rebuild_dense()
     builder.rebuild_sparse()
+    if include_sample:
+        RulesStore(settings.processed_dir / "rules").install_samples(settings.sample_dir / "rules")
+    if extract_rules and (report.changed_schemes or force):
+        from yojana.ingest.rules_extract import extract_all
+
+        only = None if force else report.changed_schemes
+        report.rules = asyncio.run(extract_all(settings, only=only, force=force))
     return report
 
 
@@ -284,6 +296,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--max-pages", type=int, help="Limit pages per source when scraping")
     parser.add_argument("--sample", action="store_true", help="Include the fictional sample set")
     parser.add_argument("--force", action="store_true", help="Reprocess every document")
+    parser.add_argument(
+        "--rules", action="store_true", help="Extract eligibility rules for changed schemes"
+    )
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -294,6 +309,7 @@ def main(argv: list[str] | None = None) -> None:
         include_sample=args.sample,
         force=args.force,
         max_pages=args.max_pages,
+        extract_rules=args.rules,
     )
     print(json.dumps(report.as_dict(), indent=2, ensure_ascii=False))
 

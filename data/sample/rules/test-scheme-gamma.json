@@ -1,0 +1,75 @@
+{
+  "scheme_id": "test-scheme-gamma",
+  "scheme_name": "Test Scheme Gamma",
+  "rules": {
+    "min_age": {
+      "value": 21,
+      "chunk_id": "test-scheme-gamma::002315::eligibility::000"
+    },
+    "max_age": {
+      "value": 40,
+      "chunk_id": "test-scheme-gamma::002315::eligibility::000"
+    },
+    "genders": {
+      "value": null,
+      "chunk_id": null
+    },
+    "states": {
+      "value": null,
+      "chunk_id": null
+    },
+    "max_annual_family_income": {
+      "value": null,
+      "chunk_id": null
+    },
+    "social_categories": {
+      "value": null,
+      "chunk_id": null
+    },
+    "occupations": {
+      "value": [
+        "entrepreneur"
+      ],
+      "chunk_id": "test-scheme-gamma::002315::eligibility::000"
+    },
+    "education_levels": {
+      "value": [
+        "diploma",
+        "graduate",
+        "postgraduate",
+        "phd"
+      ],
+      "chunk_id": "test-scheme-gamma::002315::eligibility::000"
+    },
+    "disability_required": {
+      "value": null,
+      "chunk_id": null
+    },
+    "residence": {
+      "value": null,
+      "chunk_id": null
+    },
+    "other_conditions": [
+      {
+        "text": "The startup must be less than three years old on the date of application.",
+        "chunk_id": "test-scheme-gamma::002315::eligibility::000"
+      },
+      {
+        "text": "Startups that have already raised venture funding are not eligible.",
+        "chunk_id": "test-scheme-gamma::002315::exclusions::000"
+      }
+    ]
+  },
+  "needs_review": false,
+  "reviewed_at": "2026-11-09T00:00:00+00:00",
+  "reviewed_by": "sample-data",
+  "extracted_at": null,
+  "extracted_by": "hand-written",
+  "content_hash": null,
+  "source_chunk_ids": [
+    "test-scheme-gamma::002315::eligibility::000",
+    "test-scheme-gamma::002315::exclusions::000"
+  ],
+  "previous": null,
+  "notes": "Hand-written rules for a fictional sample scheme."
+}

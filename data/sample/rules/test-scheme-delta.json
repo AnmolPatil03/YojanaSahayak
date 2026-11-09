@@ -1,0 +1,72 @@
+{
+  "scheme_id": "test-scheme-delta",
+  "scheme_name": "Test Scheme Delta",
+  "rules": {
+    "min_age": {
+      "value": 18,
+      "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+    },
+    "max_age": {
+      "value": null,
+      "chunk_id": null
+    },
+    "genders": {
+      "value": [
+        "female"
+      ],
+      "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+    },
+    "states": {
+      "value": [
+        "Karnataka"
+      ],
+      "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+    },
+    "max_annual_family_income": {
+      "value": 299999,
+      "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+    },
+    "social_categories": {
+      "value": null,
+      "chunk_id": null
+    },
+    "occupations": {
+      "value": null,
+      "chunk_id": null
+    },
+    "education_levels": {
+      "value": null,
+      "chunk_id": null
+    },
+    "disability_required": {
+      "value": true,
+      "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+    },
+    "residence": {
+      "value": null,
+      "chunk_id": null
+    },
+    "other_conditions": [
+      {
+        "text": "Disability must be 40 percent or more.",
+        "chunk_id": "test-scheme-delta::66c370::eligibility::000"
+      },
+      {
+        "text": "Must not have received a Delta grant in the last five years.",
+        "chunk_id": "test-scheme-delta::66c370::exclusions::000"
+      }
+    ]
+  },
+  "needs_review": false,
+  "reviewed_at": "2026-11-09T00:00:00+00:00",
+  "reviewed_by": "sample-data",
+  "extracted_at": null,
+  "extracted_by": "hand-written",
+  "content_hash": null,
+  "source_chunk_ids": [
+    "test-scheme-delta::66c370::eligibility::000",
+    "test-scheme-delta::66c370::exclusions::000"
+  ],
+  "previous": null,
+  "notes": "Hand-written rules for a fictional sample scheme."
+}
