@@ -31,10 +31,34 @@ function StatusIcon({ status }: { status: Criterion['status'] }) {
   )
 }
 
+function valueLabel(field: string, value: string, language: Language): string {
+  return VALUE_LABELS[field]?.[value]?.[language] ?? value
+}
+
+function localizedActual(criterion: Criterion, language: Language): string | null {
+  if (!criterion.actual) return null
+  if (criterion.field === 'disability') {
+    return criterion.actual === 'yes'
+      ? language === 'hi'
+        ? 'हाँ'
+        : 'Yes'
+      : language === 'hi'
+        ? 'नहीं'
+        : 'No'
+  }
+  return valueLabel(criterion.field, criterion.actual, language)
+}
+
 function localizedExpected(criterion: Criterion, language: Language): string {
-  if (language === 'en' || criterion.field === 'other') return criterion.expected
   const values = criterion.expected_values
   const field = criterion.field as ProfileField
+  if (criterion.field === 'other') return criterion.expected
+  if (language === 'en') {
+    if (field in VALUE_LABELS && criterion.expected.startsWith('One of')) {
+      return `One of: ${values.map((v) => valueLabel(field, String(v), 'en')).join(', ')}`
+    }
+    return criterion.expected
+  }
   switch (field) {
     case 'age':
       return values.length === 2
@@ -47,7 +71,7 @@ function localizedExpected(criterion: Criterion, language: Language): string {
     case 'disability':
       return 'आवेदक दिव्यांग होना चाहिए'
     default: {
-      const labels = values.map((v) => VALUE_LABELS[field]?.[String(v)]?.hi ?? String(v))
+      const labels = values.map((v) => valueLabel(field, String(v), 'hi'))
       return `इनमें से एक: ${labels.join(', ')}`
     }
   }
@@ -163,7 +187,7 @@ export function EligibilityCard({ result, index = 0, compact }: Props) {
                   </p>
                   {criterion.actual && (
                     <p className="text-fg-muted">
-                      {t('eligibility.you')}: {criterion.actual}
+                      {t('eligibility.you')}: {localizedActual(criterion, language)}
                     </p>
                   )}
                 </div>

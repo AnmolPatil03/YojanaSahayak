@@ -220,14 +220,14 @@
 
 .shimmer-border {
   position: relative;
-  isolation: isolate;
 }
 
+/* A masked ring so the animated gradient only shows on the border, not behind content. */
 .shimmer-border::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  z-index: -1;
+  inset: -1px;
+  padding: 2px;
   border-radius: inherit;
   background: conic-gradient(
     from var(--angle, 0deg),
@@ -237,6 +237,12 @@
     var(--marigold) 75%,
     transparent
   );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
   animation: shimmer-spin 4s linear infinite;
 }
 

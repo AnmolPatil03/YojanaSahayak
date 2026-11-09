@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { PageTransition } from './components/PageTransition'
@@ -7,6 +7,11 @@ import { EmptyState, Skeleton } from './components/States'
 import Chat from './pages/Chat'
 import Home from './pages/Home'
 import { usePreferences } from './state/preferences'
+
+const Explorer = lazy(() => import('./pages/Explorer'))
+const SchemeDetail = lazy(() => import('./pages/SchemeDetail'))
+const Eligibility = lazy(() => import('./pages/Eligibility'))
+const Compare = lazy(() => import('./pages/Compare'))
 
 function NotFound() {
   const { t } = usePreferences()
@@ -43,6 +48,10 @@ export default function App() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Home />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/schemes" element={<Explorer />} />
+            <Route path="/schemes/:id" element={<SchemeDetail />} />
+            <Route path="/eligibility" element={<Eligibility />} />
+            <Route path="/compare" element={<Compare />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
