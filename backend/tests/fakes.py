@@ -47,3 +47,53 @@ class OverlapCrossEncoder:
             words = set(tokenize(passage))
             scores.append(len(terms & words) / len(terms) if terms else 0.0)
         return scores
+
+
+class FakeGateway:
+    """Answers `complete_json` / `complete` / `stream` from canned replies."""
+
+    def __init__(self, replies: list[object] | None = None, provider: str = "fake") -> None:
+        self.replies = list(replies or [])
+        self.provider = provider
+        self.calls: list[dict[str, object]] = []
+
+    def _next(self) -> object:
+        if not self.replies:
+            raise AssertionError("FakeGateway ran out of replies")
+        reply = self.replies.pop(0)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+    async def complete_json(self, messages, schema, **kwargs):
+        from yojana.llm.gateway import LLMResult
+
+        self.calls.append({"messages": messages, "schema": schema, **kwargs})
+        parsed = schema.model_validate(self._next())
+        text = parsed.model_dump_json()
+        return parsed, LLMResult(text=text, provider=self.provider, model="fake-1", parsed=parsed)
+
+    async def complete(self, messages, **kwargs):
+        from yojana.llm.gateway import LLMResult
+
+        self.calls.append({"messages": messages, **kwargs})
+        return LLMResult(text=str(self._next()), provider=self.provider, model="fake-1")
+
+    async def stream(self, messages, **kwargs):
+        from yojana.llm.gateway import ProviderStarted, StreamDone, TokenDelta
+
+        self.calls.append({"messages": messages, **kwargs})
+        text = str(self._next())
+        yield ProviderStarted(self.provider, self.provider.title(), "fake-1", offline=False)
+        for piece in text.split(" "):
+            yield TokenDelta(piece + " ")
+        yield StreamDone(self.provider, text)
+
+    def max_input_tokens(self, *, sensitive: bool = False) -> int:
+        return 6000
+
+    def status(self) -> list[dict[str, object]]:
+        return []
+
+    async def aclose(self) -> None:
+        return None
